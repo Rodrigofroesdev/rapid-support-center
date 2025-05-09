@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  helpdesk:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rapid-support-center
+    restart: always
+    ports:
+      - "80:80"
+    # Uncomment the following lines if you want to use HTTPS with Certbot/Let's Encrypt
+    # volumes:
+    #   - ./certbot/conf:/etc/letsencrypt
+    #   - ./certbot/www:/var/www/certbot
+    networks:
+      - app-network
+
+# Uncomment if you want to add Certbot for SSL
+# certbot:
+#   image: certbot/certbot
+#   container_name: certbot
+#   volumes:
+#     - ./certbot/conf:/etc/letsencrypt
+#     - ./certbot/www:/var/www/certbot
+#   command: certonly --webroot -w /var/www/certbot --force-renewal --email your-email@example.com -d yourdomain.com --agree-tos
+#   depends_on:
+#     - helpdesk
+
+networks:
+  app-network:
+    driver: bridge

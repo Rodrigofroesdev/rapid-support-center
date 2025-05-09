@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { 
-  BarChart3, 
-  FileClock, 
-  FileCheck, 
+import {
+  BarChart3,
+  FileClock,
+  FileCheck,
   FileWarning,
   FilePlus
 } from 'lucide-react';
@@ -18,14 +18,14 @@ const Dashboard = () => {
   const chamadosAbertos = chamados.filter(c => c.status === 'aberto').length;
   const chamadosEmAndamento = chamados.filter(c => c.status === 'em_andamento').length;
   const chamadosFechados = chamados.filter(c => c.status === 'fechado').length;
-  
+
   // Prepare chart data
   const chartDataStatus = [
     { name: 'Abertos', value: chamadosAbertos },
     { name: 'Em Andamento', value: chamadosEmAndamento },
     { name: 'Fechados', value: chamadosFechados }
   ];
-  
+
   // Group by tipo
   const tipoCount: Record<string, number> = {};
   chamados.forEach(chamado => {
@@ -35,7 +35,7 @@ const Dashboard = () => {
       tipoCount[chamado.tipoChamado] = 1;
     }
   });
-  
+
   const chartDataTipo = Object.entries(tipoCount).map(([key, value]) => ({
     name: `Tipo ${key}`,
     value
@@ -44,29 +44,29 @@ const Dashboard = () => {
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-      
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard 
-          title="Total de Chamados" 
-          value={totalChamados} 
-          icon={<BarChart3 size={24} />} 
+        <StatCard
+          title="Total de Chamados"
+          value={totalChamados}
+          icon={<BarChart3 size={24} />}
         />
-        <StatCard 
-          title="Chamados Abertos" 
-          value={chamadosAbertos} 
-          icon={<FilePlus size={24} />} 
+        <StatCard
+          title="Chamados Abertos"
+          value={chamadosAbertos}
+          icon={<FilePlus size={24} />}
           className="border-l-4 border-l-helpdesk-yellow"
         />
-        <StatCard 
-          title="Em Andamento" 
-          value={chamadosEmAndamento} 
-          icon={<FileClock size={24} />} 
+        <StatCard
+          title="Em Andamento"
+          value={chamadosEmAndamento}
+          icon={<FileClock size={24} />}
           className="border-l-4 border-l-helpdesk-blue"
         />
-        <StatCard 
-          title="Chamados Fechados" 
-          value={chamadosFechados} 
-          icon={<FileCheck size={24} />} 
+        <StatCard
+          title="Chamados Fechados"
+          value={chamadosFechados}
+          icon={<FileCheck size={24} />}
           className="border-l-4 border-l-helpdesk-green"
         />
       </div>
@@ -87,7 +87,7 @@ const Dashboard = () => {
             </ResponsiveContainer>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader>
             <CardTitle>Chamados por Tipo</CardTitle>
