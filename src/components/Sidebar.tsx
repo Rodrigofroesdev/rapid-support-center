@@ -14,15 +14,17 @@ import {
   Menu,
   X 
 } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SidebarLinkProps {
   to: string;
   icon: React.ElementType;
   label: string;
   active: boolean;
+  onClick?: () => void;
 }
 
-const SidebarLink = ({ to, icon: Icon, label, active }: SidebarLinkProps) => (
+const SidebarLink = ({ to, icon: Icon, label, active, onClick }: SidebarLinkProps) => (
   <Link 
     to={to} 
     className={cn(
@@ -31,6 +33,7 @@ const SidebarLink = ({ to, icon: Icon, label, active }: SidebarLinkProps) => (
         ? "bg-sidebar-accent text-sidebar-accent-foreground" 
         : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
     )}
+    onClick={onClick}
   >
     <Icon size={18} />
     <span>{label}</span>
@@ -41,6 +44,7 @@ export function Sidebar() {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const isMobile = useIsMobile();
   
   const isActive = (path: string) => location.pathname.startsWith(path);
   
@@ -59,6 +63,12 @@ export function Sidebar() {
 
   const toggleMobileSidebar = () => {
     setIsMobileOpen(!isMobileOpen);
+  };
+  
+  const closeMobileSidebar = () => {
+    if (isMobile) {
+      setIsMobileOpen(false);
+    }
   };
 
   return (
@@ -102,6 +112,7 @@ export function Sidebar() {
                 icon={link.icon} 
                 label={link.label}
                 active={isActive(link.to)} 
+                onClick={closeMobileSidebar}
               />
             ))}
           </nav>

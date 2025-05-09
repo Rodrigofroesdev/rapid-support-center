@@ -4,9 +4,11 @@ import { Outlet, Navigate } from 'react-router-dom';
 import { Sidebar } from '@/components/Sidebar';
 import { useAuth } from '@/contexts/AuthContext';
 import { Toaster } from 'sonner';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export function MainLayout() {
   const { isAuthenticated, isLoading, user } = useAuth();
+  const isMobile = useIsMobile();
   
   // Show loading state
   if (isLoading) {
@@ -27,7 +29,7 @@ export function MainLayout() {
       <Sidebar />
       
       <div className="flex-1 flex flex-col md:ml-64">
-        <main className="flex-1 p-4 sm:p-6">
+        <main className="flex-1 p-4 sm:p-6 max-w-[1200px] mx-auto w-full">
           <Outlet />
         </main>
       </div>

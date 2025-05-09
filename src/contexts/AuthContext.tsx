@@ -30,7 +30,7 @@ export const mockUsers = [
     nome: 'Admin Teste',
     email: 'admin@teste.com',
     senha: '123456',
-    role: 'admin',
+    role: 'admin' as UserRole,
     tipo: 'TI'
   },
   {
@@ -38,7 +38,7 @@ export const mockUsers = [
     nome: 'Cliente UBS',
     email: 'ubs@teste.com',
     senha: '123456',
-    role: 'client',
+    role: 'client' as UserRole,
     tipo: 'UBS'
   },
   {
@@ -46,7 +46,7 @@ export const mockUsers = [
     nome: 'Cliente LAB',
     email: 'lab@teste.com',
     senha: '123456',
-    role: 'client',
+    role: 'client' as UserRole,
     tipo: 'LAB'
   }
 ];
@@ -90,7 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         token: `mock-token-${Date.now()}`,
       };
       
-      setUser(authenticatedUser);
+      setUser(authenticatedUser as User);
       localStorage.setItem('helpdesk_user', JSON.stringify(authenticatedUser));
       
       toast.success(`Bem-vindo, ${authenticatedUser.nome}!`);

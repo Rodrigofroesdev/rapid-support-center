@@ -15,7 +15,7 @@ const Index = () => {
       return;
     }
 
-    if (user?.role === "admin") {
+    if (user?.role === 'admin') {
       navigate("/admin/dashboard");
     } else {
       navigate("/cliente/chamados");
