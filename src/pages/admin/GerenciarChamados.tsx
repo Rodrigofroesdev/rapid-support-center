@@ -44,8 +44,8 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 const GerenciarChamados = () => {
-  const [statusFilter, setStatusFilter] = useState<string>("");
-  const [tipoFilter, setTipoFilter] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [tipoFilter, setTipoFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedChamado, setSelectedChamado] = useState<any>(null);
   const [prazo, setPrazo] = useState<Date | undefined>(undefined);
@@ -54,8 +54,8 @@ const GerenciarChamados = () => {
 
   // Filtrar chamados
   const filteredChamados = chamados.filter(chamado => {
-    const matchesStatus = statusFilter ? chamado.status === statusFilter : true;
-    const matchesTipo = tipoFilter ? chamado.tipoChamado === tipoFilter : true;
+    const matchesStatus = statusFilter === "all" ? true : chamado.status === statusFilter;
+    const matchesTipo = tipoFilter === "all" ? true : chamado.tipoChamado === tipoFilter;
     const matchesQuery = searchQuery 
       ? chamado.nome.toLowerCase().includes(searchQuery.toLowerCase()) ||
         chamado.descricao.toLowerCase().includes(searchQuery.toLowerCase())
@@ -106,7 +106,7 @@ const GerenciarChamados = () => {
                   <SelectValue placeholder="Todos os status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos os status</SelectItem>
+                  <SelectItem value="all">Todos os status</SelectItem>
                   <SelectItem value="aberto">Aberto</SelectItem>
                   <SelectItem value="em_andamento">Em Andamento</SelectItem>
                   <SelectItem value="fechado">Fechado</SelectItem>
@@ -120,7 +120,7 @@ const GerenciarChamados = () => {
                   <SelectValue placeholder="Todos os tipos" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos os tipos</SelectItem>
+                  <SelectItem value="all">Todos os tipos</SelectItem>
                   {tiposChamado.map(tipo => (
                     <SelectItem key={tipo.id} value={tipo.id}>
                       {tipo.nome}
