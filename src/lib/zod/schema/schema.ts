@@ -16,3 +16,11 @@ export const usuarioCreateSchema = usuarioSchema.extend({
     senha: z.string().min(1, { message: "Campo obrigatório" })
         .refine((value) => senhaRegex.test(value), { message: "Senha deve ter pelo menos 8 caracteres, uma letra maiúscula, uma minúscula e um número." }),
 });
+
+export const chamadoSchema = z.object({
+    nome: z.string().min(1, { message: "Campo obrigatório" }),
+    descricao: z.string().min(1, { message: "Campo obrigatório" }),
+    tipoChamadoId: z.string().min(1, { message: "Campo obrigatório" }),
+    formFiles: z.array(z.instanceof(File)).optional()
+});
+

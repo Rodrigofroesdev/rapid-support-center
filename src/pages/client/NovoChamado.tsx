@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,10 +12,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { tiposChamado } from '@/data/mockData';
 import { useAuth } from '@/contexts/AuthContext';
 import { FilePlus, Loader2, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
+import ChamadoForm from '@/components/forms/chamadoForm';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { chamadoSchema } from '@/lib/zod/schema/schema';
+import { Chamado, ChamadoCreate } from '@/lib/types/chamadoTypes';
+import { Tipo } from '@/lib/types/tipoTypes';
+import { FecthTiposChamado } from '@/lib/helpers/functions';
+import { TipoChamado } from '@/lib/types/tipoChamadoTypes';
+import ChamadoService from '@/lib/services/chamadoService';
 
 const NovoChamado = () => {
   const { user } = useAuth();
@@ -25,27 +33,44 @@ const NovoChamado = () => {
   const [arquivos, setArquivos] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewUrls, setPreviewUrls] = useState<{ file: File, url: string }[]>([]);
+  const [tiposChamado, setTiposChamado] = useState<TipoChamado[]>([]);
+
+  const { register, handleSubmit, setValue, control, formState: { errors }, reset } = useForm<ChamadoCreate>({
+    resolver: zodResolver(chamadoSchema),
+  });
+
+  const fecthTiposChamado = async () => {
+    const tipos = await FecthTiposChamado();
+    setTiposChamado(tipos);
+  };
+
+  useEffect(() => {
+    fecthTiposChamado();
+  }, [])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) {
       return;
     }
-    
+
     const newFiles = Array.from(e.target.files);
     setArquivos([...arquivos, ...newFiles]);
-    
+
     // Create preview URLs
     const newPreviewUrls = newFiles.map(file => ({
       file,
       url: URL.createObjectURL(file)
     }));
     setPreviewUrls([...previewUrls, ...newPreviewUrls]);
+
+    // Set the files in the form
+    setValue('formFiles', newFiles);
   };
 
   const removeFile = (fileToRemove: File) => {
     const updatedFiles = arquivos.filter(file => file !== fileToRemove);
     setArquivos(updatedFiles);
-    
+
     const updatedPreviews = previewUrls.filter(item => item.file !== fileToRemove);
     // Revoke the URL to avoid memory leaks
     const previewToRemove = previewUrls.find(item => item.file === fileToRemove);
@@ -55,45 +80,35 @@ const NovoChamado = () => {
     setPreviewUrls(updatedPreviews);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!nome.trim() || !descricao.trim() || !tipo) {
-      toast.error("Por favor, preencha todos os campos obrigatórios.");
-      return;
-    }
-    
-    setIsSubmitting(true);
-    
+  const onSubmit = async (data: ChamadoCreate) => {
     try {
-      // Simulating API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      toast.success("Chamado aberto com sucesso!");
-      
-      // Reset form
-      setNome('');
-      setDescricao('');
-      setTipo('');
-      
-      // Clear files and revoke URLs
-      previewUrls.forEach(item => URL.revokeObjectURL(item.url));
-      setPreviewUrls([]);
-      setArquivos([]);
-    } catch (error) {
-      toast.error("Erro ao abrir chamado. Por favor, tente novamente.");
-      console.error("Error submitting ticket:", error);
-    } finally {
+      setIsSubmitting(true);
+      const formData = new FormData();
+      formData.append('nome', data.nome);
+      formData.append('descricao', data.descricao);
+      formData.append('tipoChamadoId', data.tipoChamadoId);
+      data.formFiles.forEach(file => {
+        formData.append('formFiles', file);
+      });
+      formData.append('UsuarioId', "b4b5f9ea-ecbd-4eba-8120-0ec0d75285c6");
+      const chamadoService = new ChamadoService();
+      await chamadoService.createChamado(formData);
       setIsSubmitting(false);
+      toast.success("Chamado criado com sucesso!");
+      reset();
+    } catch (error) {
+      toast.error(error.message);
     }
-  };
+  }
+
+
 
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold tracking-tight">Abrir Novo Chamado</h1>
-      
+
       <Card>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <CardHeader>
             <CardTitle>Detalhes do Chamado</CardTitle>
             <CardDescription>
@@ -101,98 +116,13 @@ const NovoChamado = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="nome">Nome do Chamado</Label>
-              <Input
-                id="nome"
-                placeholder="Ex: Problema com impressora"
-                value={nome}
-                onChange={(e) => setNome(e.target.value)}
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="tipo">Tipo de Chamado</Label>
-              <Select value={tipo} onValueChange={setTipo} required>
-                <SelectTrigger id="tipo">
-                  <SelectValue placeholder="Selecione o tipo de chamado" />
-                </SelectTrigger>
-                <SelectContent>
-                  {tiposChamado.map((tipo) => (
-                    <SelectItem key={tipo.id} value={tipo.id}>
-                      {tipo.nome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="descricao">Descrição do Problema</Label>
-              <Textarea
-                id="descricao"
-                placeholder="Descreva o problema em detalhes..."
-                value={descricao}
-                onChange={(e) => setDescricao(e.target.value)}
-                className="min-h-[120px]"
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="arquivos">Arquivos</Label>
-              <div className="border-2 border-dashed border-gray-300 rounded-md p-6 text-center">
-                <Input
-                  id="arquivos"
-                  type="file"
-                  className="hidden"
-                  onChange={handleFileChange}
-                  multiple
-                />
-                <Label htmlFor="arquivos" className="cursor-pointer flex flex-col items-center">
-                  <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-                  <span className="text-sm font-medium">
-                    Clique para selecionar ou arraste arquivos
-                  </span>
-                  <span className="text-xs text-muted-foreground mt-1">
-                    Suporte: PDF, imagens, DOC, etc.
-                  </span>
-                </Label>
-              </div>
-              
-              {/* File Previews */}
-              {previewUrls.length > 0 && (
-                <div className="grid grid-cols-2 gap-2 mt-4">
-                  {previewUrls.map((item, index) => (
-                    <div
-                      key={index}
-                      className="relative flex items-center p-2 border border-border rounded-md bg-muted/30"
-                    >
-                      <div className="flex-1 truncate text-sm">
-                        {item.file.name}
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 shrink-0"
-                        onClick={() => removeFile(item.file)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <ChamadoForm handleFileChange={handleFileChange} removeFile={removeFile} previewUrls={previewUrls} register={register} control={control} errors={errors} tiposChamado={tiposChamado} />
           </CardContent>
           <CardFooter>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Enviando...
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 </>
               ) : (
                 <>
