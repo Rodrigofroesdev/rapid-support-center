@@ -5,10 +5,23 @@ const baseUrl = "http://localhost:5001/";
 
 const handleResponse = async <T>(response: Response): Promise<T> => {
     if (!response.ok) {
+        let errorMessage = `Desculpe, algo deu errado. Tente novamente.`;
+        try {
+            const errorData = await response.json();
+            if (errorData.erro) {
+                errorMessage = errorData.erro;
+            } else if (errorData.message) {
+                errorMessage = errorData.message;
+            }
+        } catch {
+            errorMessage = `Desculpe, algo deu errado. Tente novamente.`;
+        }
+
         const error: ApiError = {
-            message: `HTTP error! status: ${response.status}`,
+            message: errorMessage,
             status: response.status,
         };
+
         throw error;
     }
     return (await response.json()) as T;
